@@ -314,7 +314,7 @@ class MangaSlayerAPITester:
 
 def main():
     # Use the public URL from frontend .env
-    public_url = "http://localhost:8001"  # This should match REACT_APP_BACKEND_URL
+    public_url = "http://localhost:8001"  # This matches REACT_APP_BACKEND_URL
     
     tester = MangaSlayerAPITester(public_url)
     return tester.run_all_tests()
