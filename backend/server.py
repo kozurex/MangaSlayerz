@@ -180,11 +180,17 @@ async def get_sources():
     return {"sources": all_sources}
 
 @app.post("/api/sources")
-async def add_custom_source(source: MangaSource):
+async def add_custom_source(source: dict):
     """Add a custom manga source"""
-    source.id = str(uuid.uuid4())
-    source.type = "custom"
-    source.added_date = datetime.now()
+    # Create MangaSource object with generated ID
+    manga_source = MangaSource(
+        id=str(uuid.uuid4()),
+        name=source.get("name", ""),
+        url=source.get("url", ""),
+        type="custom",
+        enabled=source.get("enabled", True),
+        added_date=datetime.now()
+    )
     
     # Validate URL
     try:
