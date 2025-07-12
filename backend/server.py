@@ -332,16 +332,21 @@ async def translate_chapter(chapter_id: str, target_lang: str = "ar"):
 @app.get("/api/preferences")
 async def get_user_preferences():
     """Get user preferences"""
-    prefs = await db.preferences.find_one({"user": "default"})
-    if not prefs:
-        # Return default preferences
+    try:
+        prefs = await db.preferences.find_one({"user": "default"})
+        if not prefs:
+            # Return default preferences
+            default_prefs = UserPreferences()
+            await db.preferences.insert_one({
+                "user": "default",
+                **default_prefs.dict()
+            })
+            return default_prefs.dict()
+        return prefs
+    except Exception as e:
+        # Return default preferences if database error
         default_prefs = UserPreferences()
-        await db.preferences.insert_one({
-            "user": "default",
-            **default_prefs.dict()
-        })
         return default_prefs.dict()
-    return prefs
 
 @app.post("/api/preferences")
 async def update_user_preferences(preferences: UserPreferences):
