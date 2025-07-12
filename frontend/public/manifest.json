@@ -1,0 +1,54 @@
+{
+  "short_name": "مانغا سلاير",
+  "name": "مانغا سلاير - قارئ المانجا العربي",
+  "description": "تطبيق ويب متقدم لقراءة المانجا باللغة العربية مع إمكانية التحميل والقراءة أوفلاين",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["entertainment", "books"],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "البحث",
+      "short_name": "بحث",
+      "description": "البحث عن المانجا",
+      "url": "/?search=true",
+      "icons": [{ "src": "search-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "التحميلات",
+      "short_name": "تحميلات",
+      "description": "المانجا المحملة",
+      "url": "/downloads",
+      "icons": [{ "src": "download-icon.png", "sizes": "96x96" }]
+    }
+  ]
+}
