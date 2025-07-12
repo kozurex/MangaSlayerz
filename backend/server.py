@@ -194,15 +194,15 @@ async def add_custom_source(source: dict):
     
     # Validate URL
     try:
-        response = requests.head(source.url, timeout=5)
+        response = requests.head(manga_source.url, timeout=5)
         if response.status_code >= 400:
             raise HTTPException(status_code=400, detail="URL is not accessible")
     except:
         raise HTTPException(status_code=400, detail="Invalid or inaccessible URL")
     
     # Save to database
-    await db.sources.insert_one(source.dict())
-    return {"message": "Source added successfully", "source": source}
+    await db.sources.insert_one(manga_source.dict())
+    return {"message": "Source added successfully", "source": manga_source.dict()}
 
 @app.delete("/api/sources/{source_id}")
 async def delete_source(source_id: str):
