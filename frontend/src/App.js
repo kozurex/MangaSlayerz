@@ -563,26 +563,350 @@ const LibraryPage = () => {
   );
 };
 
-// Manga Detail Page (placeholder)
+// Manga Detail Page
 const MangaDetailPage = () => {
+  const { id } = useParams();
+  const [manga, setManga] = useState(null);
+  const [chapters, setChapters] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
+  useEffect(() => {
+    loadMangaDetails();
+  }, [id]);
+
+  const loadMangaDetails = async () => {
+    try {
+      // For demo purposes, create sample manga data
+      const sampleManga = {
+        id: id,
+        title: "One Piece",
+        title_ar: "قطعة واحدة",
+        description: "Follow Monkey D. Luffy and his crew in their quest to find the legendary One Piece treasure.",
+        description_ar: "تابع مونكي دي لوفي وطاقمه في سعيهم للعثور على كنز ون بيس الأسطوري.",
+        cover_image: "https://via.placeholder.com/300x400/4CAF50/white?text=One+Piece",
+        total_size: 1500000000, // 1.5GB
+        chapters_count: 1000,
+        download_status: "not_downloaded"
+      };
+      
+      const sampleChapters = Array.from({length: 20}, (_, i) => ({
+        id: `chapter_${i + 1}`,
+        manga_id: id,
+        chapter_number: i + 1,
+        title: `Chapter ${i + 1}`,
+        title_ar: `الفصل ${i + 1}`,
+        size: 75000000, // 75MB per chapter
+        download_status: i < 5 ? "completed" : "not_downloaded"
+      }));
+
+      setManga(sampleManga);
+      setChapters(sampleChapters);
+    } catch (error) {
+      console.error('Error loading manga details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadManga = async () => {
+    try {
+      await api.post(`/download/manga/${id}`);
+      alert('بدأ تحميل المانجا');
+      loadMangaDetails();
+    } catch (error) {
+      alert('خطأ في التحميل');
+    }
+  };
+
+  const downloadChapter = async (chapterId) => {
+    try {
+      await api.post(`/download/chapter/${chapterId}`);
+      alert('بدأ تحميل الفصل');
+      loadMangaDetails();
+    } catch (error) {
+      alert('خطأ في تحميل الفصل');
+    }
+  };
+
+  const formatSize = (bytes) => {
+    const sizes = ['بايت', 'ك.بايت', 'م.بايت', 'ج.بايت'];
+    if (bytes === 0) return '0 بايت';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  if (loading) {
+    return (
+      <motion.div className="page manga-detail-page loading-page">
+        <div className="loading-spinner"></div>
+        <p>جاري التحميل...</p>
+      </motion.div>
+    );
+  }
+
   return (
-    <motion.div className="page manga-detail-page">
+    <motion.div 
+      className="page manga-detail-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <div className="back-button" onClick={() => navigate(-1)}>← العودة</div>
-      <p>تفاصيل المانجا</p>
+      
+      <div className="manga-header">
+        <div className="manga-cover-large">
+          <img src={manga.cover_image} alt={manga.title} />
+        </div>
+        <div className="manga-details">
+          <h1 className="manga-title-large">{manga.title_ar || manga.title}</h1>
+          <p className="manga-description">{manga.description_ar || manga.description}</p>
+          <div className="manga-stats">
+            <div className="stat">
+              <span className="stat-label">الفصول:</span>
+              <span className="stat-value">{manga.chapters_count}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">الحجم:</span>
+              <span className="stat-value">{formatSize(manga.total_size)}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">الحالة:</span>
+              <span className={`stat-value ${manga.download_status}`}>
+                {manga.download_status === 'completed' ? 'مكتمل' : 
+                 manga.download_status === 'downloading' ? 'جاري التحميل' : 'غير محمل'}
+              </span>
+            </div>
+          </div>
+          <div className="action-buttons">
+            <button className="primary-button" onClick={downloadManga}>
+              تحميل المانجا كاملة
+            </button>
+            {chapters.length > 0 && (
+              <button 
+                className="secondary-button"
+                onClick={() => navigate(`/reader/${chapters[0].id}`)}
+              >
+                بدء القراءة
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="chapters-section">
+        <h2 className="section-title">الفصول</h2>
+        <div className="chapters-list">
+          {chapters.map(chapter => (
+            <div key={chapter.id} className="chapter-item">
+              <div className="chapter-info">
+                <h3 className="chapter-title">{chapter.title_ar || chapter.title}</h3>
+                <p className="chapter-size">{formatSize(chapter.size)}</p>
+              </div>
+              <div className="chapter-actions">
+                <span className={`download-status ${chapter.download_status}`}>
+                  {chapter.download_status === 'completed' ? '✓' : 
+                   chapter.download_status === 'downloading' ? '⏳' : '⬇️'}
+                </span>
+                <button 
+                  className="read-chapter-button"
+                  onClick={() => navigate(`/reader/${chapter.id}`)}
+                >
+                  قراءة
+                </button>
+                {chapter.download_status === 'not_downloaded' && (
+                  <button 
+                    className="download-chapter-button"
+                    onClick={() => downloadChapter(chapter.id)}
+                  >
+                    تحميل
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </motion.div>
   );
 };
 
-// Reader Page (placeholder)
+// Advanced Reader Page with Auto-scroll
 const ReaderPage = () => {
+  const { chapterId } = useParams();
+  const [chapter, setChapter] = useState(null);
+  const [pages, setPages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [autoScroll, setAutoScroll] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(3);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
+  useEffect(() => {
+    loadChapter();
+    loadUserPreferences();
+  }, [chapterId]);
+
+  useEffect(() => {
+    let interval;
+    if (autoScroll && !loading) {
+      interval = setInterval(() => {
+        scrollPage();
+      }, 3000 - (scrollSpeed * 200)); // Speed from 1-10, faster = lower interval
+    }
+    return () => clearInterval(interval);
+  }, [autoScroll, scrollSpeed, currentPage, loading]);
+
+  const loadChapter = async () => {
+    try {
+      // For demo purposes, create sample chapter data
+      const sampleChapter = {
+        id: chapterId,
+        title: "Chapter 1",
+        title_ar: "الفصل الأول",
+        manga_id: "manga_1"
+      };
+
+      const samplePages = Array.from({length: 20}, (_, i) => 
+        `https://via.placeholder.com/800x1200/2196F3/white?text=Page+${i + 1}`
+      );
+
+      setChapter(sampleChapter);
+      setPages(samplePages);
+    } catch (error) {
+      console.error('Error loading chapter:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUserPreferences = async () => {
+    try {
+      const prefs = await api.get('/preferences');
+      setAutoScroll(prefs.auto_scroll?.enabled || false);
+      setScrollSpeed(prefs.auto_scroll?.speed || 3);
+    } catch (error) {
+      console.error('Error loading preferences:', error);
+    }
+  };
+
+  const scrollPage = () => {
+    if (currentPage < pages.length - 1) {
+      setCurrentPage(prev => prev + 1);
+    } else {
+      setAutoScroll(false); // Stop at last page
+    }
+  };
+
+  const toggleAutoScroll = () => {
+    setAutoScroll(!autoScroll);
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const handlePageClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    
+    if (autoScroll) {
+      // Pause/resume auto-scroll on tap
+      setAutoScroll(false);
+      setTimeout(() => setAutoScroll(true), 2000); // Resume after 2 seconds
+    } else {
+      // Manual navigation
+      if (x < width / 3) {
+        // Left third - previous page (RTL)
+        if (currentPage > 0) {
+          setCurrentPage(currentPage - 1);
+        }
+      } else if (x > (width * 2) / 3) {
+        // Right third - next page (RTL)
+        if (currentPage < pages.length - 1) {
+          setCurrentPage(currentPage + 1);
+        }
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <motion.div className="page reader-page loading-page">
+        <div className="loading-spinner"></div>
+        <p>جاري تحميل الفصل...</p>
+      </motion.div>
+    );
+  }
+
   return (
-    <motion.div className="page reader-page">
-      <div className="back-button" onClick={() => navigate(-1)}>← العودة</div>
-      <p>قارئ المانجا</p>
+    <motion.div 
+      className={`page reader-page ${isFullscreen ? 'fullscreen' : ''}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      {!isFullscreen && (
+        <div className="reader-header">
+          <div className="back-button" onClick={() => navigate(-1)}>← العودة</div>
+          <h1 className="chapter-title">{chapter.title_ar || chapter.title}</h1>
+          <div className="reader-controls">
+            <button 
+              className={`control-button ${autoScroll ? 'active' : ''}`}
+              onClick={toggleAutoScroll}
+            >
+              {autoScroll ? '⏸️' : '▶️'}
+            </button>
+            <button className="control-button" onClick={toggleFullscreen}>
+              📱
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="reader-content" onClick={handlePageClick}>
+        <div className="page-container">
+          <img 
+            src={pages[currentPage]} 
+            alt={`Page ${currentPage + 1}`}
+            className="manga-page"
+          />
+        </div>
+        
+        <div className="page-navigation">
+          <div className="page-info">
+            <span>{currentPage + 1} / {pages.length}</span>
+          </div>
+          
+          {autoScroll && (
+            <div className="auto-scroll-indicator">
+              <div className="scroll-progress" style={{
+                width: `${((currentPage + 1) / pages.length) * 100}%`
+              }}></div>
+              <span className="scroll-text">التمرير التلقائي</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {autoScroll && (
+        <div className="speed-control">
+          <label>السرعة:</label>
+          <input
+            type="range"
+            min="1"
+            max="10"
+            value={scrollSpeed}
+            onChange={(e) => setScrollSpeed(parseInt(e.target.value))}
+          />
+          <span>{scrollSpeed}</span>
+        </div>
+      )}
     </motion.div>
   );
 };
