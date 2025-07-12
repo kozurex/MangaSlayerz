@@ -379,10 +379,14 @@ async def update_reading_progress(manga_id: str, chapter_id: str, page: int):
 @app.get("/api/reading-progress/{manga_id}")
 async def get_reading_progress(manga_id: str):
     """Get reading progress for manga"""
-    progress = await db.reading_progress.find_one({"manga_id": manga_id})
-    if not progress:
+    try:
+        progress = await db.reading_progress.find_one({"manga_id": manga_id})
+        if not progress:
+            return {"manga_id": manga_id, "chapter_id": None, "page": 0}
+        return progress
+    except Exception as e:
+        # Return default progress if database error
         return {"manga_id": manga_id, "chapter_id": None, "page": 0}
-    return progress
 
 if __name__ == "__main__":
     import uvicorn
